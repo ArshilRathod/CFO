@@ -68,5 +68,29 @@ def on_startup():
 def api_health():
     return {"status": "healthy", "service": "AI CFO Backend Engine"}
 
+# Optional: Serve built frontend SPA if available (for single-container/unified deployments)
+import os
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
+dist_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../frontend/dist"))
+assets_path = os.path.join(dist_path, "assets")
+
+if os.path.exists(assets_path):
+    app.mount("/assets", StaticFiles(directory=assets_path), name="assets")
+
+@app.get("/{full_path:path}")
+async def serve_spa(full_path: str):
+    if full_path.startswith("api"):
+        return {"detail": "Not Found"}
+    if os.path.exists(dist_path):
+        candidate = os.path.join(dist_path, full_path)
+        if os.path.isfile(candidate):
+            return FileResponse(candidate)
+        index_file = os.path.join(dist_path, "index.html")
+        if os.path.isfile(index_file):
+            return FileResponse(index_file)
+    return {"message": "AI CFO API is running. Frontend build not mounted."}
+
 if __name__ == "__main__":
     uvicorn.run("backend.app.main:app", host="127.0.0.1", port=8000, reload=True)
