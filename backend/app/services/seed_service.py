@@ -24,7 +24,7 @@ def seed_demo_data(db: Session) -> User:
     else:
         user = User(
             email=DEMO_USER_EMAIL,
-            full_name="Aarav Sharma (Demo Account)",
+            full_name="Aaray Sharma",
             password_hash="demo123",
             is_demo=True
         )
@@ -259,6 +259,15 @@ def seed_demo_data(db: Session) -> User:
         ))
         db.add(Transaction(
             user_id=user.id,
+            date=f"{ym}-24",
+            description="Netflix & Spotify Subscriptions",
+            category="Entertainment",
+            type="Expense",
+            amount=2000,
+            account="HDFC Salary Account"
+        ))
+        db.add(Transaction(
+            user_id=user.id,
             date=f"{ym}-26",
             description="Amazon / Flipkart Online Shopping",
             category="Shopping",
@@ -266,39 +275,56 @@ def seed_demo_data(db: Session) -> User:
             amount=shop,
             account="ICICI Credit Card"
         ))
+        db.add(Transaction(
+            user_id=user.id,
+            date=f"{ym}-28",
+            description="Apollo Pharmacy & Annual Health Checkup",
+            category="Healthcare",
+            type="Expense",
+            amount=6000,
+            account="HDFC UPI"
+        ))
 
     # 6. Initial Alerts
     alerts = [
         Alert(
             user_id=user.id,
-            title="Spending Anomaly Detected",
-            message="Shopping spending is 32% above your 6-month average (₹12,000 vs historical ₹7,000).",
+            title="Cash Flow Alert: Discretionary Spending",
+            message="Your discretionary spending increased 14% this month (₹18,500 vs ₹16,200 previous month).",
             severity="warning",
-            category="spending",
+            category="cashflow",
             is_read=False
         ),
         Alert(
             user_id=user.id,
-            title="Emergency Fund Runway: 5.4 Months",
-            message="Liquid reserves of ₹3,50,000 cover 5.4 months of living expenses. Target is 6.0 months (₹35,000 gap).",
-            severity="warning",
-            category="emergency_fund",
-            is_read=False
-        ),
-        Alert(
-            user_id=user.id,
-            title="House Goal Needs SIP Boost",
-            message="House Downpayment goal (₹40L in 7 years) requires ₹28,000/mo SIP at 11.5% CAGR. Currently allocating ₹15,000/mo.",
+            title="Goal Alert: House Downpayment Timeline",
+            message="Your current contribution rate may delay your financial goal (₹15,000/mo allocation vs required ₹28,000/mo for 7-year target).",
             severity="warning",
             category="goal",
             is_read=False
         ),
         Alert(
             user_id=user.id,
-            title="Positive Monthly Surplus",
-            message="You maintained a strong monthly surplus of ₹25,000 after all investments and EMI deductions.",
+            title="Debt Commitment: Scheduled EMI Outflow",
+            message="Your upcoming EMI represents ₹12,000 of monthly cash outflow (10.0% of your ₹1,20,000 post-tax income).",
+            severity="info",
+            category="debt",
+            is_read=False
+        ),
+        Alert(
+            user_id=user.id,
+            title="Positive Insight: Disciplined Investment Execution",
+            message="Your monthly investment contribution increased while maintaining positive cash flow (₹25,000 SIP funded with ₹25,000 free surplus remaining).",
             severity="success",
-            category="cashflow",
+            category="investment",
+            is_read=False
+        ),
+        Alert(
+            user_id=user.id,
+            title="Emergency Reserve Buffer",
+            message="Liquid reserves of ₹3,50,000 cover 5.4 months of living expenses (₹58,000/mo). Target buffer is 6.0 months (₹35,000 gap).",
+            severity="warning",
+            category="emergency_fund",
             is_read=True
         )
     ]

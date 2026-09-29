@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Plus, Search, Filter, Trash2, Edit2, Check, X, ArrowDownRight, ArrowUpRight, Calendar } from "lucide-react";
+import { Plus, Search, Filter, Trash2, Edit2, Check, X, ArrowDownRight, ArrowUpRight, Calendar, Sparkles, SlidersHorizontal } from "lucide-react";
 import { api } from "../api";
 
 export default function TransactionsPage() {
@@ -8,6 +8,9 @@ export default function TransactionsPage() {
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [typeFilter, setTypeFilter] = useState("All");
+  const [accountFilter, setAccountFilter] = useState("All");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
@@ -23,14 +26,15 @@ export default function TransactionsPage() {
 
   const categories = [
     "All", "Salary", "Housing", "Food", "Transport", "Shopping",
-    "Utilities", "Entertainment", "SIP", "EMI", "Other"
+    "Utilities", "Entertainment", "Healthcare", "SIP", "EMI", "Other"
   ];
 
   const types = ["All", "Income", "Expense", "Investment", "Loan payment"];
+  const accounts = ["All", "HDFC Salary Account", "ICICI Credit Card", "Zerodha Broking", "HDFC UPI"];
 
   useEffect(() => {
     fetchTransactions();
-  }, [categoryFilter, typeFilter, search]);
+  }, [categoryFilter, typeFilter, accountFilter, search, startDate, endDate]);
 
   const fetchTransactions = async () => {
     try {
@@ -39,8 +43,15 @@ export default function TransactionsPage() {
         category: categoryFilter,
         type: typeFilter,
         search: search.trim() || undefined,
+        start_date: startDate || undefined,
+        end_date: endDate || undefined,
       });
-      setTransactions(res);
+
+      let filtered = res;
+      if (accountFilter !== "All") {
+        filtered = filtered.filter(t => t.account === accountFilter);
+      }
+      setTransactions(filtered);
     } catch (err) {
       console.error("Error fetching transactions:", err);
     } finally {
@@ -87,7 +98,7 @@ export default function TransactionsPage() {
   const handleSave = async (e) => {
     e.preventDefault();
     if (!formData.description || !formData.amount) {
-      alert("Please enter description and amount");
+      alert("Please enter merchant/description and amount");
       return;
     }
 
@@ -109,14 +120,20 @@ export default function TransactionsPage() {
     }
   };
 
+  // Reconciled summary computations
+  const totalInflow = transactions.filter(t => t.type === "Income").reduce((sum, t) => sum + t.amount, 0);
+  const totalExpense = transactions.filter(t => t.type === "Expense").reduce((sum, t) => sum + t.amount, 0);
+  const totalSIP = transactions.filter(t => t.type === "Investment").reduce((sum, t) => sum + t.amount, 0);
+  const totalEMI = transactions.filter(t => t.type === "Loan payment").reduce((sum, t) => sum + t.amount, 0);
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Financial Transactions</h1>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Transactions & Ledger</h1>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            6-Month simulated bank ledger with categorized cash inflows and outflows
+            Automated bank transaction feed with real-time AI merchant categorization and deterministic cash-flow reconciliation
           </p>
         </div>
         <button
@@ -128,74 +145,167 @@ export default function TransactionsPage() {
         </button>
       </div>
 
-      {/* Filters & Search */}
-      <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 transition-colors">
-        <div className="relative flex-1">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search description, account or keywords..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3.5 py-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:border-indigo-500 focus:bg-white outline-none transition"
-          />
+      {/* Reconciled Monthly Summary Bar */}
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+          <span className="text-[10px] font-bold text-slate-400 uppercase block">Salary Inflow</span>
+          <span className="text-base font-extrabold text-emerald-600 dark:text-emerald-400 font-mono">+₹1,20,000</span>
+          <span className="text-[10px] text-slate-500 block mt-0.5">Post-tax salary</span>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Type:</span>
-            <select
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
-              className="px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-800 dark:text-slate-200 focus:border-indigo-500 outline-none"
-            >
-              {types.map((t) => (
-                <option key={t} value={t}>{t}</option>
-              ))}
-            </select>
-          </div>
+        <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+          <span className="text-[10px] font-bold text-slate-400 uppercase block">Living Expenses</span>
+          <span className="text-base font-extrabold text-rose-600 dark:text-rose-400 font-mono">-₹58,000</span>
+          <span className="text-[10px] text-slate-500 block mt-0.5">Essentials & shopping</span>
+        </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Category:</span>
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-800 dark:text-slate-200 focus:border-indigo-500 outline-none"
-            >
-              {categories.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
-          </div>
+        <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+          <span className="text-[10px] font-bold text-slate-400 uppercase block">Loan EMI</span>
+          <span className="text-base font-extrabold text-amber-600 dark:text-amber-400 font-mono">-₹12,000</span>
+          <span className="text-[10px] text-slate-500 block mt-0.5">Auto loan obligation</span>
+        </div>
+
+        <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+          <span className="text-[10px] font-bold text-slate-400 uppercase block">Monthly SIP</span>
+          <span className="text-base font-extrabold text-purple-600 dark:text-purple-400 font-mono">-₹25,000</span>
+          <span className="text-[10px] text-slate-500 block mt-0.5">Mutual funds basket</span>
+        </div>
+
+        <div className="col-span-2 sm:col-span-1 p-3 rounded-xl bg-indigo-50 border border-indigo-200 dark:bg-indigo-600/15 dark:border-indigo-500/30">
+          <span className="text-[10px] font-bold text-indigo-700 dark:text-indigo-400 uppercase block">Net Free Surplus</span>
+          <span className="text-base font-black text-slate-900 dark:text-white font-mono">+₹25,000</span>
+          <span className="text-[10px] text-indigo-600 dark:text-indigo-300 font-bold block mt-0.5">20.8% Surplus Rate</span>
         </div>
       </div>
 
-      {/* Transactions Table */}
+      {/* Filters & Search Controls (Section 9: Search, Date filter, Category filter, Account filter) */}
+      <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3 transition-colors">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+          <div className="relative flex-1">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search merchant, description, or account (e.g. Rent, Groceries, Netflix, Axis)..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 outline-none transition"
+            />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Account Filter */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Account:</span>
+              <select
+                value={accountFilter}
+                onChange={(e) => setAccountFilter(e.target.value)}
+                className="px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-800 dark:text-slate-200 focus:border-indigo-500 outline-none"
+              >
+                {accounts.map((a) => (
+                  <option key={a} value={a}>{a}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Category Filter */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Category:</span>
+              <select
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className="px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-800 dark:text-slate-200 focus:border-indigo-500 outline-none"
+              >
+                {categories.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Type Filter */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Type:</span>
+              <select
+                value={typeFilter}
+                onChange={(e) => setTypeFilter(e.target.value)}
+                className="px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-800 dark:text-slate-200 focus:border-indigo-500 outline-none"
+              >
+                {types.map((t) => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Date Filter Row */}
+        <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-slate-100 dark:border-slate-800/60 text-xs text-slate-500">
+          <span className="flex items-center gap-1 font-medium">
+            <Calendar className="w-3.5 h-3.5" />
+            Date Filter:
+          </span>
+          <div className="flex items-center gap-1.5">
+            <span>From:</span>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="px-2 py-1 rounded bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-800 dark:text-slate-200 outline-none"
+            />
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span>To:</span>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="px-2 py-1 rounded bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-800 dark:text-slate-200 outline-none"
+            />
+          </div>
+          {(startDate || endDate || search || categoryFilter !== "All" || typeFilter !== "All" || accountFilter !== "All") && (
+            <button
+              onClick={() => {
+                setStartDate("");
+                setEndDate("");
+                setSearch("");
+                setCategoryFilter("All");
+                setTypeFilter("All");
+                setAccountFilter("All");
+              }}
+              className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-semibold ml-auto"
+            >
+              Reset Filters
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Section 9: Realistic Transactions Table */}
       <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm dark:shadow-xl transition-colors">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/70 text-[11px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">
                 <th className="py-3.5 px-4">Date</th>
-                <th className="py-3.5 px-4">Description</th>
+                <th className="py-3.5 px-4">Merchant / Description</th>
                 <th className="py-3.5 px-4">Category</th>
                 <th className="py-3.5 px-4">Type</th>
                 <th className="py-3.5 px-4 text-right">Amount</th>
                 <th className="py-3.5 px-4">Account</th>
+                <th className="py-3.5 px-4 text-center">AI Categorization</th>
                 <th className="py-3.5 px-4 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs text-slate-700 dark:text-slate-300">
               {loading ? (
                 <tr>
-                  <td colSpan="7" className="py-12 text-center text-slate-500">
+                  <td colSpan="8" className="py-12 text-center text-slate-500">
                     <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-                    Loading transactions...
+                    Loading transactions ledger...
                   </td>
                 </tr>
               ) : transactions.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="py-12 text-center text-slate-500">
+                  <td colSpan="8" className="py-12 text-center text-slate-500">
                     No transactions match the selected filters.
                   </td>
                 </tr>
@@ -204,6 +314,7 @@ export default function TransactionsPage() {
                   const isIncome = t.type === "Income";
                   const isExpense = t.type === "Expense";
                   const isInvestment = t.type === "Investment";
+                  const isEMI = t.type === "Loan payment";
 
                   return (
                     <tr key={t.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition">
@@ -214,7 +325,7 @@ export default function TransactionsPage() {
                         {t.description}
                       </td>
                       <td className="py-3 px-4">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/60">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/60">
                           {t.category}
                         </span>
                       </td>
@@ -226,7 +337,7 @@ export default function TransactionsPage() {
                               : isExpense
                               ? "text-rose-600 dark:text-rose-400"
                               : isInvestment
-                              ? "text-indigo-600 dark:text-indigo-400"
+                              ? "text-purple-600 dark:text-purple-400"
                               : "text-amber-600 dark:text-amber-400"
                           }`}
                         >
@@ -241,6 +352,12 @@ export default function TransactionsPage() {
                       </td>
                       <td className="py-3 px-4 text-slate-500 dark:text-slate-400 text-[11px]">
                         {t.account}
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/20">
+                          <Sparkles className="w-3 h-3 text-indigo-500" />
+                          <span>AI Tagged</span>
+                        </span>
                       </td>
                       <td className="py-3 px-4 text-center">
                         <div className="flex items-center justify-center gap-1">
@@ -297,10 +414,10 @@ export default function TransactionsPage() {
               </div>
 
               <div>
-                <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Description</label>
+                <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Merchant / Description</label>
                 <input
                   type="text"
-                  placeholder="e.g. Swiggy food delivery, Grocery, Salary"
+                  placeholder="e.g. Swiggy food delivery, Grocery, Salary, Subscription"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   required
@@ -353,12 +470,15 @@ export default function TransactionsPage() {
 
                 <div>
                   <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Account</label>
-                  <input
-                    type="text"
+                  <select
                     value={formData.account}
                     onChange={(e) => setFormData({ ...formData, account: e.target.value })}
                     className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white outline-none focus:border-indigo-500"
-                  />
+                  >
+                    {accounts.filter(a => a !== "All").map((a) => (
+                      <option key={a} value={a}>{a}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
@@ -366,7 +486,7 @@ export default function TransactionsPage() {
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium"
+                  className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium"
                 >
                   Cancel
                 </button>

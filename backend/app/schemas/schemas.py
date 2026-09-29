@@ -190,10 +190,15 @@ class AIChatRequest(BaseModel):
     conversation_id: Optional[str] = None
 
 class AIChatResponse(BaseModel):
+    user_query: Optional[str] = None
     message: str
     insight: str
     why: str
     data_used: Dict[str, Any]
+    financial_analysis: Optional[Dict[str, Any]] = None
+    what_if_options: Optional[List[Dict[str, Any]]] = None
+    goal_impact_badge: Optional[str] = None
+    goal_impact_text: Optional[str] = None
     assumptions: List[str]
     possible_actions: List[Dict[str, Any]]
     suggested_followups: List[str]

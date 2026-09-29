@@ -21,43 +21,43 @@ def generate_user_alerts(user_id: int, db: Session):
     alerts_to_create = [
         Alert(
             user_id=user_id,
-            title="Spending Anomaly Detected",
-            message="Shopping & Lifestyle spending is 32% above your 6-month average (₹12,000 this month vs ₹7,000 baseline).",
+            title="Cash Flow Alert: Discretionary Spending",
+            message="Your discretionary spending increased 14% this month (₹18,500 vs ₹16,200 previous month).",
             severity="warning",
-            category="spending",
+            category="cashflow",
             is_read=False
         ),
         Alert(
             user_id=user_id,
-            title="Emergency Fund Below Target",
-            message=f"Current liquid reserve provides {months_covered} months coverage against your {target_months:.0f}-month safety target (₹35,000 buffer gap).",
-            severity="warning",
-            category="emergency_fund",
-            is_read=False
-        ),
-        Alert(
-            user_id=user_id,
-            title="Goal Shortfall Detected",
-            message="House Downpayment goal (₹40 Lakhs in 7 years) has an estimated shortfall of ₹11.5 Lakhs under current ₹15,000/mo SIP.",
+            title="Goal Alert: House Downpayment Timeline",
+            message="Your current contribution rate may delay your financial goal (₹15,000/mo allocation vs required ₹28,000/mo for 7-year target).",
             severity="warning",
             category="goal",
             is_read=False
         ),
         Alert(
             user_id=user_id,
-            title="Healthy Cash Flow Surplus",
-            message=f"You have a positive free cash surplus of ₹{cashflow['monthly_surplus']:,.0f} this month after all EMIs and SIP investments.",
-            severity="success",
-            category="cashflow",
-            is_read=True
+            title="Debt Commitment: Scheduled EMI Outflow",
+            message=f"Your upcoming EMI represents ₹{cashflow.get('monthly_debt_emi', 12000):,.0f} of monthly cash outflow ({cashflow.get('debt_to_income_ratio', 10.0):.1f}% of income).",
+            severity="info",
+            category="debt",
+            is_read=False
         ),
         Alert(
             user_id=user_id,
-            title="High Equity Allocation",
-            message="Equity accounts for 62.7% of your investment portfolio. Consider rebalancing towards debt or gold.",
-            severity="info",
-            category="portfolio",
+            title="Positive Insight: Disciplined Investment Execution",
+            message=f"Your monthly investment contribution increased while maintaining positive cash flow (₹{cashflow.get('monthly_investments', 25000):,.0f} SIP with ₹{cashflow.get('monthly_surplus', 25000):,.0f} free surplus).",
+            severity="success",
+            category="investment",
             is_read=False
+        ),
+        Alert(
+            user_id=user_id,
+            title="Emergency Reserve Buffer",
+            message=f"Current liquid reserve provides {months_covered} months coverage against your {target_months:.0f}-month safety target (₹35,000 buffer gap).",
+            severity="warning",
+            category="emergency_fund",
+            is_read=True
         )
     ]
 

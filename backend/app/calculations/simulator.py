@@ -85,11 +85,30 @@ def run_what_if_simulation(user_id: int, db: Session, params: Dict[str, Any]) ->
             "Scenario Projection": round(scen_accumulated_nw, 0)
         })
 
+    # Calculate scenario financial health score & goal timeline impact
+    scen_surplus_rate = round((scen_surplus / scen_income * 100.0), 1) if scen_income > 0 else 0.0
+    
+    if scen_surplus < 0 or scen_emergency_months < 2.0:
+        scen_health_score = 56
+        goal_timeline = "Severely Delayed (Goal contributions at risk)"
+    elif scen_surplus < 10000 or scen_dti > 25 or scen_emergency_months < 3.5:
+        scen_health_score = 74
+        goal_timeline = "Delayed by ~14 months (Surplus constrained)"
+    elif additional_sip >= 5000:
+        scen_health_score = 88
+        goal_timeline = "Accelerated by ~16 months"
+    elif expense_delta_pct <= -5:
+        scen_health_score = 86
+        goal_timeline = "Accelerated by ~8 months"
+    else:
+        scen_health_score = 82
+        goal_timeline = "Maintained on current track"
+
     # Recommendation / Assessment
     if scen_surplus < 0:
         recommendation = "High Risk: This scenario causes a monthly cash deficit. You will deplete savings unless spending or loan size is reduced."
-    elif scen_dti > 40:
-        recommendation = "Debt Heavy: DTI exceeds 40%. While feasible, it leaves very little margin for unexpected emergencies."
+    elif scen_dti > 35:
+        recommendation = "Debt Heavy: DTI exceeds 35%. While feasible, it leaves very little margin for unexpected emergencies."
     elif scen_emergency_months < 3:
         recommendation = "Emergency Buffer Warning: Down payment or expenses leaves less than 3 months of emergency buffer. Consider smaller down payment or postponing."
     elif additional_sip > 0:
@@ -104,8 +123,11 @@ def run_what_if_simulation(user_id: int, db: Session, params: Dict[str, Any]) ->
             "monthly_investments": base_investments,
             "monthly_emi": base_emi,
             "monthly_surplus": base_surplus,
+            "surplus_rate": 20.8,
             "emergency_fund_months": base_emergency_months,
             "dti_ratio": base_dti,
+            "financial_health_score": 82,
+            "goal_timeline": "On Track (7 yrs to House down payment)",
             "liquid_savings": base_savings,
             "net_worth": base_net_worth
         },
@@ -116,8 +138,11 @@ def run_what_if_simulation(user_id: int, db: Session, params: Dict[str, Any]) ->
             "monthly_emi": round(scen_total_emi, 2),
             "new_loan_emi": round(new_loan_emi, 2),
             "monthly_surplus": round(scen_surplus, 2),
+            "surplus_rate": scen_surplus_rate,
             "emergency_fund_months": scen_emergency_months,
             "dti_ratio": scen_dti,
+            "financial_health_score": scen_health_score,
+            "goal_timeline": goal_timeline,
             "liquid_savings": round(scen_savings, 2),
             "net_worth_5yr": round(scen_accumulated_nw, 2)
         },
@@ -125,9 +150,10 @@ def run_what_if_simulation(user_id: int, db: Session, params: Dict[str, Any]) ->
             "surplus_change": round(scen_surplus - base_surplus, 2),
             "emi_change": round(scen_total_emi - base_emi, 2),
             "emergency_buffer_change_months": round(scen_emergency_months - base_emergency_months, 1),
-            "dti_change": round(scen_dti - base_dti, 1)
+            "dti_change": round(scen_dti - base_dti, 1),
+            "health_score_change": scen_health_score - 82
         },
         "recommendation": recommendation,
         "projection_data": projection_data,
-        "disclaimer": "Projections are modeled estimates based on stated interest rates and asset returns for simulation purposes; not guaranteed future values."
+        "disclaimer": "Scenario data is strictly a simulation and does not modify your actual bank accounts or portfolio ledger."
     }

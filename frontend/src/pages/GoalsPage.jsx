@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Target, Plus, CheckCircle2, AlertTriangle, ArrowRight, Trash2, Calendar, TrendingUp, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Target, Plus, CheckCircle2, AlertTriangle, ArrowRight, Trash2, Calendar, TrendingUp, X, Sparkles } from "lucide-react";
 import { api } from "../api";
 
 export default function GoalsPage() {
+  const navigate = useNavigate();
   const [goalsData, setGoalsData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -76,6 +78,10 @@ export default function GoalsPage() {
     }
   };
 
+  const handleAskContextual = (query) => {
+    navigate("/ai-cfo", { state: { prefilled: query } });
+  };
+
   if (loading || !goalsData) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-3">
@@ -107,6 +113,33 @@ export default function GoalsPage() {
         </button>
       </div>
 
+      {/* Section 12: AI CFO GOAL INSIGHT BANNER */}
+      <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-50/80 via-white to-purple-50/60 dark:from-slate-900 dark:via-indigo-950/40 dark:to-slate-900 border border-indigo-200 dark:border-indigo-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center flex-shrink-0 shadow-md shadow-indigo-600/25">
+            <Sparkles className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-bold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">
+                ✦ AI CFO GOAL INSIGHT
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 mt-0.5">
+              "Based on your current contribution pattern, your emergency-fund goal is progressing steadily."
+            </p>
+          </div>
+        </div>
+
+        <button
+          onClick={() => handleAskContextual("Am I on track for my financial goal?")}
+          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-xs font-semibold text-white whitespace-nowrap shadow-sm transition"
+        >
+          <span>Ask AI CFO About My Goals</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
       {/* Summary KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
@@ -118,7 +151,7 @@ export default function GoalsPage() {
         <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
           <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">CURRENT SAVED CORPUS</div>
           <div className="text-xl font-extrabold text-indigo-600 dark:text-indigo-400 mt-1">₹{(total_current / 100000).toFixed(1)} Lakhs</div>
-          <div className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">{overall_progress}% Achieved so far</div>
+          <div className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">{overall_progress}% Achieved overall</div>
         </div>
 
         <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
@@ -136,7 +169,7 @@ export default function GoalsPage() {
         </div>
       </div>
 
-      {/* Goals Cards Grid */}
+      {/* Section 12: Realistic Goal Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {goals.map((g) => {
           return (
@@ -173,7 +206,7 @@ export default function GoalsPage() {
                     ) : (
                       <span className="flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-100 dark:text-amber-400 dark:bg-amber-500/10 px-2 py-0.5 rounded border border-amber-300 dark:border-amber-500/20">
                         <AlertTriangle className="w-3.5 h-3.5" />
-                        Shortfall
+                        Shortfall Gap
                       </span>
                     )}
                     <button
@@ -189,7 +222,7 @@ export default function GoalsPage() {
                 {/* Progress bar */}
                 <div className="space-y-1.5 mt-4">
                   <div className="flex justify-between text-xs">
-                    <span className="text-slate-500 dark:text-slate-400">Current Progress</span>
+                    <span className="text-slate-500 dark:text-slate-400">Progress</span>
                     <span className="font-bold text-slate-900 dark:text-white font-mono">{g.progress_pct}%</span>
                   </div>
                   <div className="w-full bg-slate-100 dark:bg-slate-950 h-2.5 rounded-full overflow-hidden border border-slate-200 dark:border-slate-800">
@@ -197,7 +230,7 @@ export default function GoalsPage() {
                       className={`h-full rounded-full transition-all duration-500 ${
                         g.on_track ? "bg-indigo-600 dark:bg-indigo-500" : "bg-amber-500"
                       }`}
-                      style={{ width: `${g.progress_pct}%` }}
+                      style={{ width: `${Math.min(100, g.progress_pct)}%` }}
                     ></div>
                   </div>
                 </div>
@@ -213,13 +246,13 @@ export default function GoalsPage() {
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-500 dark:text-slate-400 block text-[11px]">Current Corpus</span>
+                    <span className="text-slate-500 dark:text-slate-400 block text-[11px]">Current Amount</span>
                     <span className="font-bold text-slate-700 dark:text-slate-200 font-mono">
                       ₹{g.current_amount.toLocaleString("en-IN")}
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-500 dark:text-slate-400 block text-[11px]">Projected Amount</span>
+                    <span className="text-slate-500 dark:text-slate-400 block text-[11px]">Projected Corpus</span>
                     <span className={`font-bold font-mono ${g.on_track ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
                       {g.projected_corpus >= 10000000
                         ? `₹${(g.projected_corpus / 10000000).toFixed(2)} Cr`
@@ -227,9 +260,9 @@ export default function GoalsPage() {
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-500 dark:text-slate-400 block text-[11px]">Time Horizon</span>
+                    <span className="text-slate-500 dark:text-slate-400 block text-[11px]">Target Date</span>
                     <span className="font-semibold text-slate-900 dark:text-white">
-                      {g.target_years} yrs ({g.target_date})
+                      {g.target_date} ({g.target_years} yrs)
                     </span>
                   </div>
                 </div>
@@ -244,7 +277,7 @@ export default function GoalsPage() {
                   </span>
                 </div>
                 <div className="text-right">
-                  <span className="text-[10px] text-indigo-700 dark:text-indigo-400 block font-bold">Required Monthly SIP</span>
+                  <span className="text-[10px] text-indigo-700 dark:text-indigo-400 block font-bold">Required Monthly Contribution</span>
                   <span className="font-black text-indigo-600 dark:text-indigo-300 font-mono">
                     ₹{g.required_monthly_contribution.toLocaleString("en-IN")}/mo
                   </span>
@@ -253,6 +286,28 @@ export default function GoalsPage() {
             </div>
           );
         })}
+      </div>
+
+      {/* Section 19: Contextual AI Questions */}
+      <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 transition-colors">
+        <div className="flex items-center gap-2 text-xs">
+          <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+          <span className="font-bold text-slate-900 dark:text-white">Contextual Goal Questions:</span>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => handleAskContextual("Am I on track for my financial goal?")}
+            className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 dark:bg-slate-800 dark:hover:bg-indigo-950/40 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-300 transition"
+          >
+            "Am I on track?"
+          </button>
+          <button
+            onClick={() => handleAskContextual("What happens if I increase my SIP by ₹5,000?")}
+            className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 dark:bg-slate-800 dark:hover:bg-indigo-950/40 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-300 transition"
+          >
+            "How much should I save monthly?"
+          </button>
+        </div>
       </div>
 
       {/* Add Goal Modal */}

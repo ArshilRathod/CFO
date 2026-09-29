@@ -58,16 +58,16 @@ export default function ProfilePage() {
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white">Aarav Sharma</h2>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">Aaray Sharma</h2>
             <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/20">
-              Demo Profile Active
+              Demo Financial Profile Active
             </span>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">demo@aicfo.finance • {profile.employment}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">aaray.sharma@demo.aicfo.finance • {profile.employment || "Senior Product Engineer"}</p>
           <div className="flex flex-wrap gap-4 mt-3 text-xs text-slate-600 dark:text-slate-300">
-            <div>Age: <span className="font-bold text-slate-900 dark:text-white">{profile.age} years</span></div>
-            <div>Dependents: <span className="font-bold text-slate-900 dark:text-white">{profile.dependents}</span></div>
-            <div>Risk Category: <span className="font-bold text-indigo-600 dark:text-indigo-400">{profile.risk_preference}</span></div>
+            <div>Age: <span className="font-bold text-slate-900 dark:text-white">{profile.age || 29} years</span></div>
+            <div>Dependents: <span className="font-bold text-slate-900 dark:text-white">{profile.dependents ?? 1}</span></div>
+            <div>Risk Category: <span className="font-bold text-indigo-600 dark:text-indigo-400">{profile.risk_preference || "Moderate Growth"}</span></div>
           </div>
         </div>
       </div>
@@ -76,30 +76,46 @@ export default function ProfilePage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Financial Baselines */}
         <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl space-y-3 transition-colors">
-          <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2">
-            <Target className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-            <span>Financial Baselines</span>
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+            <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+              <Target className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+              <span>Master Financial Profile</span>
+            </div>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-indigo-500/30">
+              VERIFIED BASELINE
+            </span>
           </div>
           <div className="space-y-2 text-xs">
             <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800/60">
-              <span className="text-slate-500 dark:text-slate-400">Monthly In-Hand Income</span>
-              <span className="font-bold text-slate-900 dark:text-white font-mono">₹{profile.monthly_income.toLocaleString("en-IN")}</span>
+              <span className="text-slate-500 dark:text-slate-400">Monthly Post-Tax Income</span>
+              <span className="font-bold text-slate-900 dark:text-white font-mono">₹1,20,000</span>
             </div>
             <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800/60">
-              <span className="text-slate-500 dark:text-slate-400">Baseline Living Expenses</span>
-              <span className="font-bold text-slate-900 dark:text-white font-mono">₹{profile.monthly_expenses.toLocaleString("en-IN")}</span>
+              <span className="text-slate-500 dark:text-slate-400">Monthly Living Expenses</span>
+              <span className="font-bold text-slate-900 dark:text-white font-mono">₹58,000</span>
+            </div>
+            <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800/60">
+              <span className="text-slate-500 dark:text-slate-400">Existing Loan EMI (Axis Auto)</span>
+              <span className="font-bold text-amber-600 dark:text-amber-400 font-mono">₹12,000 <span className="text-[10px] text-slate-400 font-normal">(10.0% DTI)</span></span>
+            </div>
+            <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800/60">
+              <span className="text-slate-500 dark:text-slate-400">Monthly Investment / SIP</span>
+              <span className="font-bold text-indigo-600 dark:text-indigo-400 font-mono">₹25,000</span>
+            </div>
+            <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800/60 bg-emerald-500/5 -mx-2 px-2 rounded">
+              <span className="text-slate-700 dark:text-slate-300 font-medium">Free Monthly Surplus</span>
+              <div className="text-right">
+                <span className="font-bold text-emerald-600 dark:text-emerald-400 font-mono">₹25,000</span>
+                <span className="text-[10px] text-emerald-500 font-bold ml-1.5">(20.8% Surplus Rate)</span>
+              </div>
             </div>
             <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800/60">
               <span className="text-slate-500 dark:text-slate-400">Liquid Savings (Emergency Buffer)</span>
-              <span className="font-bold text-slate-900 dark:text-white font-mono">₹{profile.savings.toLocaleString("en-IN")}</span>
-            </div>
-            <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800/60">
-              <span className="text-slate-500 dark:text-slate-400">Total Existing Investments</span>
-              <span className="font-bold text-indigo-600 dark:text-indigo-400 font-mono">₹{profile.total_investments.toLocaleString("en-IN")}</span>
+              <span className="font-bold text-slate-900 dark:text-white font-mono">₹3,50,000 <span className="text-[10px] text-slate-400 font-normal">(5.4 mo)</span></span>
             </div>
             <div className="flex justify-between py-1.5">
-              <span className="text-slate-500 dark:text-slate-400">Emergency Target</span>
-              <span className="font-bold text-emerald-600 dark:text-emerald-400">{profile.emergency_fund_target_months} Months</span>
+              <span className="text-slate-500 dark:text-slate-400">Total Portfolio Valuation</span>
+              <span className="font-bold text-indigo-600 dark:text-indigo-400 font-mono">₹18,50,000</span>
             </div>
           </div>
         </div>

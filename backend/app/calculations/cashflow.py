@@ -25,18 +25,17 @@ def calculate_monthly_cashflow(user_id: int, db: Session):
     monthly_investments = baseline_investments
     
     monthly_surplus = monthly_income - monthly_expenses - monthly_emi - monthly_investments
-    total_savings_and_investments = monthly_investments + max(0.0, monthly_surplus)
-    savings_rate = (total_savings_and_investments / monthly_income * 100.0) if monthly_income > 0 else 0.0
+    surplus_rate = (monthly_surplus / monthly_income * 100.0) if monthly_income > 0 else 0.0
+    investment_rate = (monthly_investments / monthly_income * 100.0) if monthly_income > 0 else 0.0
 
     # Build 6-month historical trend
-    # Months: Oct, Nov, Dec, Jan, Feb, Mar (or relative last 6 months)
     history = [
-        {"month": "Oct", "income": 120000, "expenses": 54000, "investments": 25000, "emi": 12000, "surplus": 29000, "savings_rate": 45.0},
-        {"month": "Nov", "income": 120000, "expenses": 56500, "investments": 25000, "emi": 12000, "surplus": 26500, "savings_rate": 42.9},
-        {"month": "Dec", "income": 135000, "expenses": 65000, "investments": 30000, "emi": 12000, "surplus": 28000, "savings_rate": 43.0}, # year-end bonus
-        {"month": "Jan", "income": 120000, "expenses": 59000, "investments": 25000, "emi": 12000, "surplus": 24000, "savings_rate": 40.8},
-        {"month": "Feb", "income": 120000, "expenses": 57000, "investments": 25000, "emi": 12000, "surplus": 26000, "savings_rate": 42.5},
-        {"month": "Mar (Current)", "income": monthly_income, "expenses": monthly_expenses, "investments": monthly_investments, "emi": monthly_emi, "surplus": monthly_surplus, "savings_rate": round(savings_rate, 1)},
+        {"month": "Oct", "income": 120000, "expenses": 54000, "investments": 25000, "emi": 12000, "surplus": 29000, "surplus_rate": 24.2},
+        {"month": "Nov", "income": 120000, "expenses": 56500, "investments": 25000, "emi": 12000, "surplus": 26500, "surplus_rate": 22.1},
+        {"month": "Dec", "income": 135000, "expenses": 65000, "investments": 30000, "emi": 12000, "surplus": 28000, "surplus_rate": 20.7}, # year-end bonus
+        {"month": "Jan", "income": 120000, "expenses": 59000, "investments": 25000, "emi": 12000, "surplus": 24000, "surplus_rate": 20.0},
+        {"month": "Feb", "income": 120000, "expenses": 57000, "investments": 25000, "emi": 12000, "surplus": 26000, "surplus_rate": 21.7},
+        {"month": "Mar (Current)", "income": monthly_income, "expenses": monthly_expenses, "investments": monthly_investments, "emi": monthly_emi, "surplus": monthly_surplus, "surplus_rate": round(surplus_rate, 1)},
     ]
 
     # Category breakdown for current month expenses
@@ -56,7 +55,9 @@ def calculate_monthly_cashflow(user_id: int, db: Session):
         "monthly_investments": monthly_investments,
         "monthly_emi": monthly_emi,
         "monthly_surplus": monthly_surplus,
-        "savings_rate": round(savings_rate, 1),
+        "surplus_rate": round(surplus_rate, 1),
+        "investment_rate": round(investment_rate, 1),
+        "savings_rate": round(surplus_rate, 1), # Reconciled surplus rate
         "history": history,
         "expense_categories": expense_categories,
         "status": "Healthy Cash Flow" if monthly_surplus > 15000 else "Constrained Cash Flow"

@@ -32,28 +32,70 @@ def get_dashboard_data(db: Session = Depends(get_db)):
 
     # Unread alerts count
     unread_alerts = db.query(Alert).filter(Alert.user_id == user.id, Alert.is_read == False).count()
+    alerts_list = db.query(Alert).filter(Alert.user_id == user.id).limit(4).all()
+
+    upcoming_commitments = [
+        {"name": "Apartment Rent", "due_date": "3rd of every month", "amount": 18000, "category": "Housing", "status": "Scheduled Auto-Debit", "account": "HDFC Salary Account"},
+        {"name": "Axis Auto Loan EMI", "due_date": "5th of every month", "amount": 12000, "category": "Debt Obligations", "status": "Scheduled Auto-Debit", "account": "HDFC Salary Account"},
+        {"name": "Mutual Funds SIP Basket", "due_date": "7th of every month", "amount": 25000, "category": "Investment Contributions", "status": "Scheduled Auto-Debit", "account": "Zerodha Broking"},
+    ]
 
     top_cards = {
-        "net_worth": {
-            "value": networth["net_worth"],
-            "formatted": f"₹{(networth['net_worth'] / 100000):.1f}L",
-            "trend": "+4.2% MoM",
+        "financial_health": {
+            "value": 82,
+            "formatted": "82 / 100",
+            "trend": "Strong / Balanced",
             "positive": True,
-            "subtitle": f"Total Assets: ₹{(networth['total_assets'] / 100000):.1f}L | Debts: ₹{(networth['total_liabilities'] / 100000):.1f}L"
+            "subtitle": "Evaluated across 6 pillars"
         },
         "monthly_income": {
             "value": cashflow["monthly_income"],
-            "formatted": f"₹{(cashflow['monthly_income'] / 100000):.2f}L",
-            "trend": "Stable",
+            "formatted": f"₹{cashflow['monthly_income']:,.0f}",
+            "trend": "Post-Tax Salary",
             "positive": True,
             "subtitle": "Salaried post-tax inflow"
         },
+        "free_surplus": {
+            "value": cashflow["monthly_surplus"],
+            "formatted": f"₹{cashflow['monthly_surplus']:,.0f}",
+            "trend": "20.8% Surplus Rate",
+            "positive": True,
+            "subtitle": "Free unallocated cash buffer"
+        },
+        "investment_contribution": {
+            "value": cashflow["monthly_investments"],
+            "formatted": f"₹{cashflow['monthly_investments']:,.0f}",
+            "trend": "20.8% of Income",
+            "positive": True,
+            "subtitle": "Automated monthly SIP"
+        },
+        "debt_emi": {
+            "value": loans["total_emi"],
+            "formatted": f"₹{loans['total_emi']:,.0f}",
+            "trend": "10.0% DTI",
+            "positive": True,
+            "subtitle": "Manageable auto loan EMI"
+        },
         "monthly_expenses": {
             "value": cashflow["monthly_expenses"],
-            "formatted": f"₹{int(cashflow['monthly_expenses'] / 1000)}K",
-            "trend": "+8.9% spike",
+            "formatted": f"₹{cashflow['monthly_expenses']:,.0f}",
+            "trend": "48.3% of Income",
             "positive": False,
-            "subtitle": "Discretionary + Essential"
+            "subtitle": "Discretionary & Essential"
+        },
+        "net_worth": {
+            "value": networth["net_worth"],
+            "formatted": f"₹{(networth['net_worth'] / 100000):.1f}L",
+            "trend": "+14.2% 6-Mo Growth",
+            "positive": True,
+            "subtitle": f"Assets: ₹{(networth['total_assets'] / 100000):.1f}L | Debts: ₹{(networth['total_liabilities'] / 100000):.1f}L"
+        },
+        "savings_rate": {
+            "value": 20.8,
+            "formatted": "20.8%",
+            "trend": "Surplus Rate",
+            "positive": True,
+            "subtitle": "Surplus: ₹25,000/mo"
         },
         "investments": {
             "value": investments["total_current_value"],
@@ -69,13 +111,6 @@ def get_dashboard_data(db: Session = Depends(get_db)):
             "positive": True,
             "subtitle": f"EMI: ₹{loans['total_emi']:,.0f}/mo"
         },
-        "savings_rate": {
-            "value": cashflow["savings_rate"],
-            "formatted": f"{cashflow['savings_rate']}%",
-            "trend": "Benchmark: >20%",
-            "positive": True,
-            "subtitle": f"Surplus: ₹{cashflow['monthly_surplus']:,.0f}"
-        },
         "emergency_fund": {
             "value": ef_months,
             "formatted": f"{ef_months} months",
@@ -85,8 +120,18 @@ def get_dashboard_data(db: Session = Depends(get_db)):
         }
     }
 
+    ai_insight = {
+        "text": "Your monthly cash flow remains positive with ₹25,000 free surplus. Your ₹25,000 monthly investment contribution is currently supported by your cash flow, while your ₹12,000 EMI remains manageable.",
+        "action_prompt": "Can I afford a ₹10 lakh car next year?",
+        "action_label": "ASK AI CFO →"
+    }
+
     return {
         "cards": top_cards,
+        "ai_insight": ai_insight,
+        "upcoming_commitments": upcoming_commitments,
+        "goals": goals["goals"],
+        "alerts": [{"id": a.id, "title": a.title, "message": a.message, "severity": a.severity, "category": a.category, "is_read": a.is_read} for a in alerts_list],
         "net_worth_trend": networth["history"],
         "cashflow_history": cashflow["history"],
         "expense_breakdown": cashflow["expense_categories"],

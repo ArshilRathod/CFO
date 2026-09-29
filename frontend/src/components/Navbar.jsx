@@ -54,7 +54,7 @@ export default function Navbar({ onResetDemo }) {
                 DEMO DATA
               </span>
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-none">Personal Financial Intelligence</p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-none">AI-Powered Personal Financial Intelligence</p>
           </div>
         </Link>
       </div>
@@ -107,16 +107,17 @@ export default function Navbar({ onResetDemo }) {
 
         <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 hidden sm:block"></div>
 
-        {/* User Chip */}
+        {/* Demo Financial Profile User Chip */}
         <Link
           to="/profile"
           className="flex items-center gap-2.5 p-1.5 pl-2.5 rounded-lg border transition group bg-slate-100/80 hover:bg-slate-200/80 border-slate-200 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:border-slate-700/50"
+          title="Demo Financial Profile: Aaray Sharma"
         >
           <div className="text-right hidden sm:block">
             <div className="text-xs font-semibold text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-white transition">
-              Aarav Sharma
+              Aaray Sharma
             </div>
-            <div className="text-[10px] text-slate-500 dark:text-slate-400">Demo Account</div>
+            <div className="text-[10px] text-slate-500 dark:text-slate-400">Demo Financial Profile • Demo Account</div>
           </div>
           <div className="w-7 h-7 rounded-full bg-indigo-500/15 dark:bg-indigo-600/30 border border-indigo-500/40 text-indigo-600 dark:text-indigo-300 flex items-center justify-center font-bold text-xs">
             AS
